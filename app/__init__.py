@@ -8,7 +8,7 @@ def create_app():
     app = Flask(__name__)
 
     # Azure Key Vault'tan sırları yükle
-    app.config.update(load_secrets())
+    #app.config.update(load_secrets())
 
     # Blueprint'leri kaydet
     app.register_blueprint(main)
