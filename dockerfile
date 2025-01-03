@@ -1,21 +1,20 @@
-# Use an official Python image
+# Use an official Python runtime as a base image
 FROM python:3.9-slim
 
-# Install dependencies
+# Set the working directory
 WORKDIR /app
+
+# Copy the requirements file into the container
 COPY requirements.txt requirements.txt
-RUN pip install -r requirements.txt
 
-# Install SSH server
-RUN apt-get update && apt-get install -y openssh-server
-RUN mkdir /var/run/sshd
-RUN echo 'root:password' | chpasswd
+# Install the dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose required ports
-EXPOSE 22 5000
-
-# Copy project files
+# Copy the application code into the container
 COPY . .
 
-# Start SSH and Flask application
-CMD service ssh start && flask run --host=0.0.0.0 --port=5000
+# Expose the port Flask will run on
+EXPOSE 80
+
+# Command to run the application
+CMD ["flask", "run", "--host=0.0.0.0", "--port=80"]
