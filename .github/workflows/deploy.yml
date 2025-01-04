@@ -1,30 +1,44 @@
-name: Build and Deploy Docker Image
+name: Build Docker Image and Deploy to Azure
 
 on:
   push:
     branches:
+      - main
       - develop
 
 jobs:
-  build-and-push:
+  build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+    # Step 1: Checkout the Code
+    - name: Checkout Code
+      uses: actions/checkout@v3
 
-      - name: Login to Azure
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+    # Step 2: Log in to Azure
+    - name: Log in to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Build and Push Docker Image
-        run: |
-          az acr login --name ${{ secrets.REGISTRY_NAME }}
-          docker build -t ${{ secrets.REGISTRY_NAME }}.azurecr.io/flask-app:latest .
-          docker push ${{ secrets.REGISTRY_NAME }}.azurecr.io/flask-app:latest
+    # Step 3: Log in to Azure Container Registry (ACR)
+    - name: Log in to Azure Container Registry
+      uses: azure/docker-login@v1
+      with:
+        login-server: kmcacr.azurecr.io
+        username: ${{ secrets.REGISTRY_USERNAME }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}
 
-      - name: Deploy to Azure App Service
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: ${{ secrets.APP_NAME }}
-          images: ${{ secrets.REGISTRY_NAME }}.azurecr.io/flask-app:latest
+    # Step 4: Build and Push Docker Image to ACR
+    - name: Build and Push Docker Image
+      run: |
+        docker build -t kmcacr.azurecr.io/flask-app:latest .
+        docker push kmcacr.azurecr.io/flask-app:latest
+
+    # Step 5: Deploy Docker Image to Azure Web App
+    - name: Deploy to Azure Web App
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: kmcapp
+        images: kmcacr.azurecr.io/flask-app:latest
+        slot-name: Production
