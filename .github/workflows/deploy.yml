@@ -1,4 +1,4 @@
-name: Build and Deploy to Azure
+name: Deploy to Azure
 
 on:
   push:
@@ -6,42 +6,25 @@ on:
       - main
 
 jobs:
-  build-and-push-to-acr:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Login to Azure
-      uses: azure/login@v1
+    - name: Login to Azure Container Registry
+      run: echo "${{ secrets.REGISTRY_PASSWORD }}" | docker login ${{ secrets.REGISTRY_USERNAME }} --username ${{ secrets.REGISTRY_USERNAME }} --password-stdin
+
+    - name: Build and Push Docker Image
+      run: |
+        docker build -t ${{ secrets.REGISTRY_USERNAME }}/$REPO_NAME:latest .
+        docker push ${{ secrets.REGISTRY_USERNAME }}/$REPO_NAME:latest
+
+    - name: Deploy to Azure Web App
+      uses: azure/webapps-deploy@v2
       with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-    - name: Build Docker image
-      run: |
-        docker build -t $ACR_NAME.azurecr.io/$REPO_NAME:latest .
-        echo "Built Docker image: $ACR_NAME.azurecr.io/$REPO_NAME:latest"
-
-    - name: Push Docker image to ACR
-      run: |
-        docker push $ACR_NAME.azurecr.io/$REPO_NAME:latest
-        echo "Pushed Docker image to ACR"
-
-  deploy-to-app-service:
-    needs: build-and-push-to-acr
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Login to Azure
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-    - name: Deploy to Azure App Service
-      run: |
-        az webapp create --name $APP_SERVICE_NAME \
-                         --resource-group $RESOURCE_GROUP \
-                         --plan $APP_SERVICE_PLAN \
-                         --deployment-container-image-name $ACR_NAME.azurecr.io/$REPO_NAME:latest
-        echo "Deployment complete: $APP_SERVICE_NAME"
+        app-name: $APP_SERVICE_NAME
+        slot-name: production
+        publish-profile: ${{ secrets.AZURE_CREDENTIALS }}
+        images: ${{ secrets.REGISTRY_USERNAME }}/$REPO_NAME:latest
