@@ -19,4 +19,4 @@ RUN pip install -r requirements.txt
 EXPOSE 5000 22
 
 # Start SSH and Flask server
-CMD service ssh start && python run.py
+CMD ["sh", "-c", "service ssh start && python run.py"]
