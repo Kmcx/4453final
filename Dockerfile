@@ -15,8 +15,8 @@ COPY . /app
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose necessary ports (Flask: 5000, SSH: 22)
-EXPOSE 5000 22
+# Expose necessary ports (Flask: 80, SSH: 22)
+EXPOSE 80 22
 
 # Start SSH and Flask server
 CMD ["sh", "-c", "service ssh start && python run.py"]
