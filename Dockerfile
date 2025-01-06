@@ -1,21 +1,22 @@
-# Use an official Python image
+# Base Image
 FROM python:3.9-slim
+
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    openssh-server && \
+    mkdir /var/run/sshd
 
 # Set working directory
 WORKDIR /app
 
-# Install dependencies
-COPY requirements.txt requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt && \
-    apt-get update && apt-get install -y --no-install-recommends openssh-server && \
-    mkdir /var/run/sshd && \
-    echo 'root:password' | chpasswd
-
-# Expose required ports
-EXPOSE 22 5000
-
 # Copy project files
-COPY . .
+COPY . /app
 
-# Start SSH and Flask application
-CMD ["sh", "-c", "service ssh start && flask run --host=0.0.0.0 --port=5000"]
+# Install Python dependencies
+RUN pip install -r requirements.txt
+
+# Expose required ports (SSH and Flask)
+EXPOSE 5000 22
+
+# Start SSH and Flask server
+CMD service ssh start && python run.py
