@@ -9,6 +9,9 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
+    env:
+      REPO_NAME: finalrepoatest
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
@@ -18,8 +21,8 @@ jobs:
 
     - name: Build and Push Docker Image
       run: |
-        docker build -t ${{ secrets.REGISTRY_USERNAME }}/$REPO_NAME:latest .
-        docker push ${{ secrets.REGISTRY_USERNAME }}/$REPO_NAME:latest
+        docker build -t ${{ secrets.REGISTRY_USERNAME }}.azurecr.io/$REPO_NAME:latest .
+        docker push ${{ secrets.REGISTRY_USERNAME }}.azurecr.io/$REPO_NAME:latest
 
     - name: Deploy to Azure Web App
       uses: azure/webapps-deploy@v2
@@ -27,4 +30,4 @@ jobs:
         app-name: $APP_SERVICE_NAME
         slot-name: production
         publish-profile: ${{ secrets.AZURE_CREDENTIALS }}
-        images: ${{ secrets.REGISTRY_USERNAME }}/$REPO_NAME:latest
+        images: ${{ secrets.REGISTRY_USERNAME }}.azurecr.io/$REPO_NAME:latest
