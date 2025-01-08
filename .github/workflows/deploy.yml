@@ -11,6 +11,8 @@ jobs:
 
     env:
       REPO_NAME: finalrepoatest
+      APP_SERVICE_NAME: finalAppService1234
+      RESOURCE_GROUP_NAME: finalResourceGroup
 
     steps:
     - name: Checkout code
@@ -26,9 +28,9 @@ jobs:
 
     - name: Deploy to Azure Web App
       run: |
-          az webapp config container set --name $APP_SERVICE_NAME \
-                                         --resource-group $RESOURCE_GROUP_NAME \
-                                         --docker-custom-image-name ${{ secrets.REGISTRY_USERNAME }}.azurecr.io/$REPO_NAME:latest \
-                                         --docker-registry-server-url https://${{ secrets.REGISTRY_USERNAME }}.azurecr.io \
-                                         --docker-registry-server-user ${{ secrets.REGISTRY_USERNAME }} \
-                                         --docker-registry-server-password ${{ secrets.REGISTRY_PASSWORD }}
+        az webapp config container set --name $APP_SERVICE_NAME \
+                                   --resource-group $RESOURCE_GROUP_NAME \
+                                   --docker-custom-image-name ${{ secrets.REGISTRY_USERNAME }}.azurecr.io/$REPO_NAME:latest \
+                                   --docker-registry-server-url https://${{ secrets.REGISTRY_USERNAME }}.azurecr.io \
+                                   --docker-registry-server-user ${{ secrets.REGISTRY_USERNAME }} \
+                                   --docker-registry-server-password ${{ secrets.REGISTRY_PASSWORD }}
