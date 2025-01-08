@@ -25,9 +25,10 @@ jobs:
         docker push ${{ secrets.REGISTRY_USERNAME }}.azurecr.io/$REPO_NAME:latest
 
     - name: Deploy to Azure Web App
-      uses: azure/webapps-deploy@v2
-      with:
-        app-name: $APP_SERVICE_NAME
-        slot-name: production
-        publish-profile: ${{ secrets.AZURE_CREDENTIALS }}
-        images: ${{ secrets.REGISTRY_USERNAME }}.azurecr.io/$REPO_NAME:latest
+      run: |
+          az webapp config container set --name $APP_SERVICE_NAME \
+                                         --resource-group $RESOURCE_GROUP_NAME \
+                                         --docker-custom-image-name ${{ secrets.REGISTRY_USERNAME }}.azurecr.io/$REPO_NAME:latest \
+                                         --docker-registry-server-url https://${{ secrets.REGISTRY_USERNAME }}.azurecr.io \
+                                         --docker-registry-server-user ${{ secrets.REGISTRY_USERNAME }} \
+                                         --docker-registry-server-password ${{ secrets.REGISTRY_PASSWORD }}
